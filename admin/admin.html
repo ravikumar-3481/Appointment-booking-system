@@ -8,26 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
+    
     <style>
         :root {
             --primary: #e11d48;
-            --primary-light: #fb7185;
             --primary-dark: #be123c;
             --bg-color: #f3f4f6;
-            --sidebar-bg: #111827;
-            --sidebar-text: #9ca3af;
-            --sidebar-hover: #1f2937;
             --card-bg: #ffffff;
             --text-dark: #1f2937;
             --text-muted: #6b7280;
             --border: #e5e7eb;
-            --success: #10b981;
-            --success-bg: #dcfce7;
-            --warning: #f59e0b;
-            --info: #3b82f6;
+            --success: #16a34a;
+            --warning: #d97706;
+            --info: #0284c7;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,92 +29,30 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
         }
 
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .sidebar-header h1 {
-            font-family: 'Playfair Display', serif;
-            color: #ffffff;
-            font-size: 1.5rem;
-            letter-spacing: 0.5px;
-        }
-        .nav-links {
-            padding: 1rem 0;
-            flex: 1;
-            overflow-y: auto;
-        }
-        .nav-item {
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        .nav-item:hover, .nav-item.active {
-            background-color: var(--sidebar-hover);
-            color: #ffffff;
-            border-left: 4px solid var(--primary);
-        }
-        .nav-item i { font-size: 1.25rem; }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Header */
-        .top-header {
-            background-color: var(--card-bg);
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--primary);
+            color: white;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        .header-title { font-size: 1.25rem; font-weight: 600; color: var(--text-dark); }
-        .header-actions { display: flex; align-items: center; gap: 1rem; }
-        .sync-status {
-            font-size: 0.8rem;
-            padding: 0.25rem 0.75rem;
-            background: var(--success-bg);
-            color: var(--success);
-            border-radius: 99px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 500;
-        }
-        .sync-status.syncing { background: #fef3c7; color: #d97706; }
+        .navbar h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .refresh-status { font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; }
+        .dot { height: 8px; width: 8px; background-color: #86efac; border-radius: 50%; display: inline-block; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
 
-        /* Scrollable Area */
-        .content-area {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
+        /* Dashboard Container */
+        .container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
 
-        /* --- Stats Grid --- */
+        /* Stat Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -131,125 +62,104 @@
         .stat-card {
             background: var(--card-bg);
             padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--border);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+            transition: transform 0.2s;
         }
-        .stat-info h3 { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
-        .stat-info .value { font-size: 1.8rem; font-weight: 600; color: var(--text-dark); }
-        .stat-icon {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-        }
-        .icon-red { background: #ffe4e6; color: var(--primary); }
-        .icon-blue { background: #dbeafe; color: var(--info); }
-        .icon-green { background: #dcfce7; color: var(--success); }
-        .icon-yellow { background: #fef3c7; color: var(--warning); }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 2.2rem; font-weight: 700; color: var(--text-dark); }
+        
+        /* Stats Border Colors */
+        .stat-card:nth-child(2) { border-left-color: var(--info); }
+        .stat-card:nth-child(3) { border-left-color: var(--warning); }
+        .stat-card:nth-child(4) { border-left-color: var(--success); }
 
-        /* --- Charts Grid --- */
+        /* Charts Section */
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
         .chart-card {
             background: var(--card-bg);
             padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            border: 1px solid var(--border);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .chart-card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-dark); }
-        .canvas-container { position: relative; height: 260px; width: 100%; }
+        .chart-card h2 { font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--text-dark); font-weight: 600; }
+        .canvas-container { position: relative; height: 280px; width: 100%; }
 
-        /* --- Table Section --- */
+        /* Table Section */
         .table-card {
             background: var(--card-bg);
-            border-radius: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            border: 1px solid var(--border);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             overflow: hidden;
             margin-bottom: 2rem;
         }
-        .table-header {
-            padding: 1.5rem;
+        .table-header { 
+            padding: 1.5rem; 
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-        .table-header h2 { font-size: 1.1rem; }
+        .table-header h2 { font-size: 1.25rem; font-weight: 600; }
         
-        /* Search Box */
+        /* Search Input */
         .search-box {
-            display: flex; align-items: center;
-            background: var(--bg-color);
+            padding: 0.5rem 1rem;
             border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
             width: 300px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
         }
-        .search-box i { color: var(--text-muted); margin-right: 8px; }
-        .search-box input {
-            border: none; background: transparent; outline: none;
-            width: 100%; font-size: 0.9rem; font-family: 'Poppins', sans-serif;
-        }
-
+        .search-box:focus { border-color: var(--primary); }
+        
         .table-responsive { overflow-x: auto; max-height: 500px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        th { background-color: #f9fafb; font-weight: 600; color: var(--text-muted); position: sticky; top: 0; z-index: 1;}
-        tr:hover { background-color: #f9fafb; }
+        th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; white-space: nowrap; }
+        th { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); position: sticky; top: 0; z-index: 10; }
+        tr:hover { background-color: #f1f5f9; }
+        
+        /* Badges */
         .badge {
-            background-color: var(--success-bg); color: var(--success); padding: 0.25rem 0.6rem;
-            border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-block;
+            padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
         }
-        .action-btn {
-            background: none; border: none; color: var(--primary);
-            cursor: pointer; font-size: 1.1rem; padding: 4px;
-        }
-        .action-btn:hover { color: var(--primary-dark); }
+        .badge-upcoming { background-color: #fef3c7; color: #b45309; }
+        .badge-past { background-color: #e2e8f0; color: #475569; }
+        .badge-today { background-color: #dcfce7; color: #166534; }
 
-        /* --- Toast Notification --- */
+        /* Toast Notification */
         .toast-container {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            position: fixed; top: 80px; right: 20px; z-index: 1000;
             display: flex; flex-direction: column; gap: 10px;
         }
         .toast {
-            background-color: white; border-left: 4px solid var(--primary);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem;
+            background-color: white; border-left: 4px solid var(--success);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem 1.5rem;
             border-radius: 0.5rem; display: flex; align-items: flex-start; gap: 12px;
-            transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 320px;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-width: 300px;
         }
         .toast.show { transform: translateX(0); }
-        .toast-icon { color: var(--primary); font-size: 1.5rem; margin-top: 2px; }
-        .toast-content h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-dark); }
-        .toast-content p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;}
+        .toast-icon { color: var(--success); margin-top: 2px; }
 
         /* Loader */
-        .loader-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9); display: flex;
-            flex-direction: column; justify-content: center; align-items: center; z-index: 50;
-        }
-        .spinner {
-            border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px;
-            border-radius: 50%; border-left-color: var(--primary);
-            animation: spin 1s linear infinite; margin-bottom: 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loader { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 1.1rem; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(225, 29, 72, 0.2); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s ease-in-out infinite; margin-bottom: 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        @media (max-width: 1024px) {
-            .sidebar { width: 70px; }
-            .sidebar-header h1, .nav-item span { display: none; }
+        @media (max-width: 992px) {
             .charts-grid { grid-template-columns: 1fr; }
+            .search-box { width: 100%; }
         }
     </style>
 </head>
@@ -258,150 +168,232 @@
     <!-- Notification Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Sidebar Layout -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h1>G&G Admin</h1>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+            Glow & Grace Admin
+        </h1>
+        <div class="refresh-status" id="refreshStatus">
+            <span class="dot"></span> Live Syncing
         </div>
-        <div class="nav-links">
-            <div class="nav-item active"><i class="ph ph-squares-four"></i> <span>Dashboard</span></div>
-            <div class="nav-item"><i class="ph ph-calendar-check"></i> <span>Appointments</span></div>
-            <div class="nav-item"><i class="ph ph-users"></i> <span>Customers</span></div>
-            <div class="nav-item"><i class="ph ph-chart-line-up"></i> <span>Analytics</span></div>
-            <div class="nav-item"><i class="ph ph-gear"></i> <span>Settings</span></div>
-        </div>
-    </aside>
+    </nav>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Header -->
-        <header class="top-header">
-            <div class="header-title">Overview</div>
-            <div class="header-actions">
-                <div class="sync-status" id="refreshStatus">
-                    <i class="ph ph-check-circle"></i> Live Sync Active
+    <div class="container">
+        <!-- Loader -->
+        <div id="loader">
+            <div class="spinner"></div>
+            <div>Loading secure dashboard data...</div>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Stat Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Appointments</h3>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Today's Bookings</h3>
+                    <div class="value" id="stat-today">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Upcoming Schedule</h3>
+                    <div class="value" id="stat-upcoming">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Past Completed</h3>
+                    <div class="value" id="stat-past">0</div>
                 </div>
             </div>
-        </header>
 
-        <!-- Scrollable Content -->
-        <div class="content-area">
-            
-            <div class="loader-container" id="loader">
-                <div class="spinner"></div>
-                <p>Connecting to Database...</p>
-            </div>
-
-            <div id="dashboardContent" style="display: none;">
-                <!-- Stat Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Total Bookings</h3>
-                            <div class="value" id="stat-total">0</div>
-                        </div>
-                        <div class="stat-icon icon-blue"><i class="ph ph-folder-open"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Today's Bookings</h3>
-                            <div class="value" id="stat-today">0</div>
-                        </div>
-                        <div class="stat-icon icon-red"><i class="ph ph-calendar-star"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Upcoming</h3>
-                            <div class="value" id="stat-upcoming">0</div>
-                        </div>
-                        <div class="stat-icon icon-yellow"><i class="ph ph-clock-countdown"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>This Month</h3>
-                            <div class="value" id="stat-month">0</div>
-                        </div>
-                        <div class="stat-icon icon-green"><i class="ph ph-chart-bar"></i></div>
+            <!-- Charts Section (Top Row) -->
+            <div class="charts-grid">
+                <!-- Chart 1: Daily Bookings (Bar) -->
+                <div class="chart-card">
+                    <h2>Daily Trend (Last 7 Days)</h2>
+                    <div class="canvas-container">
+                        <canvas id="dailyChart"></canvas>
                     </div>
                 </div>
-
-                <!-- Charts Section -->
-                <div class="charts-grid">
-                    <!-- Chart 1: Daily Bookings -->
-                    <div class="chart-card">
-                        <h2>Daily Bookings Trend</h2>
-                        <div class="canvas-container"><canvas id="dailyChart"></canvas></div>
-                    </div>
-                    <!-- Chart 2: Time Slot -->
-                    <div class="chart-card">
-                        <h2>Preferred Time Slots</h2>
-                        <div class="canvas-container"><canvas id="timeChart"></canvas></div>
-                    </div>
-                    <!-- Chart 3: Day of Week -->
-                    <div class="chart-card">
-                        <h2>Busiest Days of Week</h2>
-                        <div class="canvas-container"><canvas id="dayOfWeekChart"></canvas></div>
-                    </div>
-                    <!-- Chart 4: Monthly Trend -->
-                    <div class="chart-card">
-                        <h2>Monthly Overview</h2>
-                        <div class="canvas-container"><canvas id="monthlyChart"></canvas></div>
-                    </div>
-                </div>
-
-                <!-- Recent Bookings Table -->
-                <div class="table-card">
-                    <div class="table-header">
-                        <h2>Appointments Masterlist</h2>
-                        <div class="search-box">
-                            <i class="ph ph-magnifying-glass"></i>
-                            <input type="text" id="searchInput" placeholder="Search name, mobile or ID..." onkeyup="handleSearch()">
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="bookingsTable">
-                            <thead>
-                                <tr>
-                                    <th>Appt. ID</th>
-                                    <th>Customer Name</th>
-                                    <th>Mobile</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <!-- Data populated via JS -->
-                            </tbody>
-                        </table>
+                <!-- Chart 2: Time Slot Analysis (Doughnut) -->
+                <div class="chart-card">
+                    <h2>Preferred Time Slots</h2>
+                    <div class="canvas-container">
+                        <canvas id="timeChart"></canvas>
                     </div>
                 </div>
             </div>
+
+            <!-- Charts Section (Bottom Row) -->
+            <div class="charts-grid">
+                <!-- Chart 3: Monthly Trend (Line) -->
+                <div class="chart-card">
+                    <h2>Monthly Bookings Overview</h2>
+                    <div class="canvas-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                <!-- Chart 4: Appointment Status (Pie) -->
+                <div class="chart-card">
+                    <h2>Overall Status Breakdown</h2>
+                    <div class="canvas-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>All Appointments Database</h2>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search by Name, ID or Mobile..." onkeyup="filterTable()">
+                </div>
+                <div class="table-responsive">
+                    <table id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Appointment ID</th>
+                                <th>Client Name</th>
+                                <th>Mobile Number</th>
+                                <th>Appointment Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data JS se dynamically update hoga -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // NEW WEB APP URL
+        // Updated Web App URL as requested
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWjgovGzRGffDAer7lT7Y4IPfO8fQu12nDb3FeL2pOdHa1aE1oYLtiSALHXDNBGCPEiQ/exec';
         
         let allBookings = [];
-        let filteredBookings = []; // For search functionality
-        
-        // Chart Instances
+        // Chart instances store karne ke liye variables
         let dailyChartInstance = null;
         let timeChartInstance = null;
-        let dayOfWeekChartInstance = null;
         let monthlyChartInstance = null;
-        
+        let statusChartInstance = null;
         let isFirstLoad = true;
 
-        // --- Data Fetching & Polling ---
-        async function fetchDashboardData() {
-            const statusIndicator = document.getElementById('refreshStatus');
-            statusIndicator.innerHTML = '<i class="ph ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> Syncing...';
-            statusIndicator.classList.add('syncing');
+        // --- BUG FIX 1: STRICT INDIAN DATE PARSER ---
+        function parseDateSafe(dateString) {
+            if (!dateString) return null;
+            
+            // Try standard ISO parse
+            let d = new Date(dateString);
+            if (!isNaN(d.getTime()) && dateString.includes('-') && dateString.split('-')[0].length === 4) return d;
+            
+            // Force strict parsing for DD/MM/YYYY or DD-MM-YYYY
+            const parts = dateString.split(/[-/]/);
+            if (parts.length === 3) {
+                let day = parseInt(parts[0]);
+                let month = parseInt(parts[1]) - 1; // JS months are 0-11
+                let year = parseInt(parts[2]);
+                
+                // If format was accidentally MM-DD-YYYY, swap day and month
+                if(day > 31 && year < 31) {
+                    // It's likely YYYY-MM-DD
+                    year = parseInt(parts[0]);
+                    month = parseInt(parts[1]) - 1;
+                    day = parseInt(parts[2]);
+                } else if(month > 11) {
+                    // If month > 12, they likely passed MM-DD-YYYY
+                    month = parseInt(parts[0]) - 1;
+                    day = parseInt(parts[1]);
+                }
+                
+                if (year < 100) year += 2000;
+                
+                d = new Date(year, month, day);
+                if (!isNaN(d.getTime())) return d;
+            }
+            return null;
+        }
 
+        // Display ke liye date format (UPDATED TO DD/MM/YYYY)
+        function formatDateIN(dateString) {
+            const d = parseDateSafe(dateString);
+            if (!d) return dateString || "N/A";
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Logic check ke liye Date string YYYY-MM-DD format me
+        function getStandardDateStr(dateString) {
+            const d = parseDateSafe(dateString);
+            if (!d) return "1970-01-01"; // Fallback past date
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        // --- BUG FIX 3: SAFE TIME FORMATTER ---
+        function formatTime(timeStr) {
+            if(!timeStr) return "N/A";
+            
+            // Catch Google Sheets Full ISO Date String
+            if(timeStr.includes('T')) {
+                let d = new Date(timeStr);
+                if(!isNaN(d)) return d.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: true});
+            }
+
+            // Check if it's already AM/PM
+            if(timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) return timeStr;
+            
+            if(timeStr.includes(':')) {
+                let parts = timeStr.split(':');
+                let hours = parseInt(parts[0]);
+                if(isNaN(hours)) return timeStr;
+                
+                let minutes = parts[1].substring(0, 2); 
+                let ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                return `${hours}:${minutes} ${ampm}`;
+            }
+            return timeStr;
+        }
+
+        // --- NEW HELPER FOR REAL-TIME COMPARISON ---
+        function getAppointmentDateTime(dateString, timeString) {
+            const d = parseDateSafe(dateString);
+            if (!d) return new Date(0); // Fallback to past date if invalid
+            
+            let hours = 0, minutes = 0;
+            if(timeString) {
+                if(timeString.includes('T')) {
+                    let tDate = new Date(timeString);
+                    if(!isNaN(tDate)) {
+                        hours = tDate.getHours();
+                        minutes = tDate.getMinutes();
+                    }
+                } else {
+                    let str = timeString.toUpperCase();
+                    let isPM = str.includes('PM');
+                    let isAM = str.includes('AM');
+                    let cleanStr = str.replace(/[A-Z ]/g, ''); 
+                    let parts = cleanStr.split(':');
+                    hours = parseInt(parts[0]) || 0;
+                    minutes = parseInt(parts[1]) || 0;
+                    
+                    if(isPM && hours !== 12) hours += 12;
+                    if(isAM && hours === 12) hours = 0;
+                }
+            }
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hours, minutes, 0);
+        }
+
+        // --- Data Fetching Function (Real-time update logic) ---
+        async function fetchDashboardData() {
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
                 const result = await response.json();
@@ -409,27 +401,24 @@
                 if (result.status === 'success') {
                     const newData = result.data;
                     
-                    // Trigger Live Notifications for new bookings
+                    // --- BUG FIX 2: DEEP DATA COMPARISON ---
+                    // Length ki jagah ab hum pura data check karenge, to sheet edit/update hone par bhi UI update hoga
+                    const oldDataString = JSON.stringify(allBookings);
+                    const newDataString = JSON.stringify(newData);
+
+                    // Nayi bookings aayi hain toh Notification dikhao
                     if (!isFirstLoad && newData.length > allBookings.length) {
-                        const newCount = newData.length - allBookings.length;
-                        const newAppointments = newData.slice(allBookings.length);
-                        
-                        // Show detailed alert for up to 3 newest bookings to avoid spam
-                        newAppointments.slice(-3).forEach(b => {
-                            const dateFmt = formatDateIN(b.date);
-                            const timeFmt = formatTime(b.time);
-                            showToast(`Appointment Details:`, `${b.name} has booked on <b>${dateFmt}</b> at <b>${timeFmt}</b>. Contact: ${b.mobile}`);
+                        const newEntries = newData.slice(allBookings.length); 
+                        newEntries.forEach(booking => {
+                            showToast(booking.name, booking.id, booking.date, booking.time);
                         });
-                        
-                        if(newCount > 3) {
-                            showToast(`Multiple Updates`, `+${newCount - 3} more new bookings received in the background.`);
-                        }
                     }
 
-                    allBookings = newData;
-                    
-                    // Maintain search filter if active
-                    handleSearch(); 
+                    // Data string change hone par UI refresh karein
+                    if (isFirstLoad || oldDataString !== newDataString) {
+                        allBookings = newData;
+                        updateDashboardUI();
+                    }
                     
                     if(isFirstLoad) {
                         document.getElementById('loader').style.display = 'none';
@@ -439,104 +428,120 @@
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
-                statusIndicator.innerHTML = '<i class="ph ph-warning"></i> Sync Error';
-                statusIndicator.style.background = '#fee2e2';
-                statusIndicator.style.color = '#ef4444';
-            } finally {
-                setTimeout(() => {
-                    statusIndicator.innerHTML = '<i class="ph ph-check-circle"></i> Live Sync Active';
-                    statusIndicator.classList.remove('syncing');
-                    statusIndicator.style = ''; // Reset inline styles
-                }, 2000);
             }
         }
 
-        // --- UI Update & Rendering ---
-        function updateDashboardUI(dataToRender) {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            
+        // --- UI Update Function ---
+        function updateDashboardUI() {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
             let todayCount = 0;
             let upcomingCount = 0;
-            let monthCount = 0;
+            let pastCount = 0;
 
-            // Stats calculation uses ALL data
-            allBookings.forEach(b => {
-                const parsedDate = safeParseDate(b.date);
-                if(parsedDate) {
-                    const bDateStr = parsedDate.toISOString().split('T')[0];
-                    if (bDateStr === todayStr) todayCount++;
-                    if (bDateStr > todayStr) upcomingCount++;
-                    if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) monthCount++;
+            // Sort bookings: Nayi wali upar (Reverse)
+            const sortedBookings = [...allBookings].reverse();
+            const tbody = document.getElementById('tableBody');
+            
+            // Pura table fir se render karein latest data ke sath
+            let tableHTML = '';
+
+            sortedBookings.forEach((b) => {
+                const apptDT = getAppointmentDateTime(b.date, b.time);
+                const apptDateOnly = new Date(apptDT.getFullYear(), apptDT.getMonth(), apptDT.getDate());
+                
+                let statusBadge = '';
+                
+                // REAL-TIME COMPARISON (Checks exact Date AND Time)
+                if (apptDT < now) {
+                    pastCount++;
+                    statusBadge = '<span class="badge badge-past">Completed</span>';
+                } else {
+                    // Future or exact present time
+                    if (apptDateOnly.getTime() === todayStart.getTime()) {
+                        todayCount++;
+                        statusBadge = '<span class="badge badge-today">Today (Pending)</span>';
+                    } else {
+                        upcomingCount++;
+                        statusBadge = '<span class="badge badge-upcoming">Upcoming</span>';
+                    }
                 }
+
+                tableHTML += `<tr>
+                    <td><strong>${b.id}</strong></td>
+                    <td style="font-weight: 500;">${b.name}</td>
+                    <td>${b.mobile}</td>
+                    <td>${formatDateIN(b.date)}</td>
+                    <td>${formatTime(b.time)}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
             });
 
-            // Update Stats
+            tbody.innerHTML = tableHTML;
+
+            // Stats Update
             document.getElementById('stat-total').innerText = allBookings.length;
             document.getElementById('stat-today').innerText = todayCount;
             document.getElementById('stat-upcoming').innerText = upcomingCount;
-            document.getElementById('stat-month').innerText = monthCount;
+            document.getElementById('stat-past').innerText = pastCount;
 
-            // Render Table (using potentially filtered data)
-            const sortedBookings = [...dataToRender].reverse();
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            // Re-apply active search filter if any
+            filterTable();
 
-            if (sortedBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: #6b7280;">No records found.</td></tr>`;
-            } else {
-                sortedBookings.forEach((b) => {
-                    const row = `<tr>
-                        <td><strong>${b.id || 'N/A'}</strong></td>
-                        <td>${b.name || 'N/A'}</td>
-                        <td>${b.mobile || 'N/A'}</td>
-                        <td>${formatDateIN(b.date)}</td>
-                        <td>${formatTime(b.time)}</td>
-                        <td><span class="badge">Confirmed</span></td>
-                        <td>
-                            <button class="action-btn" title="View Details"><i class="ph ph-eye"></i></button>
-                        </td>
-                    </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-
-            // Render Charts (always uses all data for trends)
-            renderCharts([...allBookings].reverse());
+            // Render All 4 Charts
+            renderCharts(allBookings, todayCount, upcomingCount, pastCount);
         }
 
-        // --- Search Functionality ---
-        function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            if (!query) {
-                filteredBookings = [...allBookings];
-            } else {
-                filteredBookings = allBookings.filter(b => 
-                    (b.name && b.name.toLowerCase().includes(query)) ||
-                    (b.mobile && String(b.mobile).includes(query)) ||
-                    (b.id && b.id.toLowerCase().includes(query))
-                );
+        // --- Live Search / Filter Function ---
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const table = document.getElementById("bookingsTable");
+            const tr = table.getElementsByTagName("tr");
+
+            // Header chhodkar baki rows me search karein
+            for (let i = 1; i < tr.length; i++) {
+                let idCol = tr[i].getElementsByTagName("td")[0];
+                let nameCol = tr[i].getElementsByTagName("td")[1];
+                let mobileCol = tr[i].getElementsByTagName("td")[2];
+                
+                if (idCol || nameCol || mobileCol) {
+                    let idTxt = idCol.textContent || idCol.innerText;
+                    let nameTxt = nameCol.textContent || nameCol.innerText;
+                    let mobileTxt = mobileCol.textContent || mobileCol.innerText;
+                    
+                    if (idTxt.toLowerCase().indexOf(input) > -1 || 
+                        nameTxt.toLowerCase().indexOf(input) > -1 || 
+                        mobileTxt.indexOf(input) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
             }
-            updateDashboardUI(filteredBookings);
         }
 
-        // --- Advanced Chart Rendering ---
-        function renderCharts(data) {
+        // --- Chart Rendering Function (4 Charts) ---
+        function renderCharts(data, todayCount, upcomingCount, pastCount) {
+            
+            // Common default settings
             Chart.defaults.font.family = "'Poppins', sans-serif";
             Chart.defaults.color = '#6b7280';
 
-            // --- 1. Daily Bookings (Last 7 Days) ---
+            // --- 1. Daily Bookings (Bar) ---
             const dateCounts = {};
             data.forEach(b => {
-                const d = safeParseDate(b.date);
-                if(d) {
-                    const dateStr = d.toISOString().split('T')[0];
-                    dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
-                }
+                const stdDate = getStandardDateStr(b.date);
+                dateCounts[stdDate] = (dateCounts[stdDate] || 0) + 1;
             });
             const sortedDates = Object.keys(dateCounts).sort().slice(-7);
-            const dailyLabels = sortedDates.map(d => formatDateIN(d).split(',')[0]);
+            
+            // BUG FIX 5: Better Label Formatting without commas
+            const dailyLabels = sortedDates.map(d => {
+                const tempDate = new Date(d);
+                if (isNaN(tempDate.getTime())) return d;
+                return tempDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); // e.g., '25 Oct'
+            }); 
             const dailyData = sortedDates.map(d => dateCounts[d]);
 
             if (dailyChartInstance) dailyChartInstance.destroy();
@@ -545,23 +550,32 @@
                 data: {
                     labels: dailyLabels,
                     datasets: [{
-                        label: 'Appointments', data: dailyData,
-                        backgroundColor: '#fb7185', borderRadius: 4
+                        label: 'Appointments',
+                        data: dailyData,
+                        backgroundColor: '#e11d48',
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        maxBarThickness: 40
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // --- 2. Time Slot Analysis ---
+            // --- 2. Time Slot (Doughnut) ---
             let morning = 0, afternoon = 0, evening = 0;
             data.forEach(b => {
-                if(b.time && typeof b.time === 'string') {
-                    const hour = parseInt(b.time.split(':')[0]);
-                    if (!isNaN(hour)) {
-                        if (hour < 12) morning++;
-                        else if (hour < 16) afternoon++;
-                        else evening++;
-                    }
+                let time = formatTime(b.time); // Pre-format to standard string
+                let isPM = time.includes('PM');
+                let hourStr = time.split(':')[0];
+                
+                if(hourStr && !isNaN(parseInt(hourStr))) {
+                    let hour = parseInt(hourStr);
+                    if(isPM && hour !== 12) hour += 12;
+                    if(time.includes('AM') && hour === 12) hour = 0;
+                    
+                    if (hour < 12) morning++;
+                    else if (hour < 16) afternoon++;
+                    else evening++;
                 }
             });
 
@@ -569,135 +583,107 @@
             timeChartInstance = new Chart(document.getElementById('timeChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Morning (<12 PM)', 'Afternoon (12-4 PM)', 'Evening (>4 PM)'],
+                    labels: ['Morning (pre 12 PM)', 'Afternoon (12-4 PM)', 'Evening (post 4 PM)'],
                     datasets: [{
                         data: [morning, afternoon, evening],
-                        backgroundColor: ['#38bdf8', '#fbbf24', '#e11d48'], borderWidth: 0
+                        backgroundColor: ['#0ea5e9', '#f59e0b', '#e11d48'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
             });
 
-            // --- 3. Day of Week Analysis ---
-            const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+            // --- BUG FIX 4: Monthly Trend Chronological Sorting (Line) ---
+            const monthCounts = {};
             data.forEach(b => {
-                const d = safeParseDate(b.date);
-                if(d) dayCounts[d.getDay()]++;
-            });
-
-            if (dayOfWeekChartInstance) dayOfWeekChartInstance.destroy();
-            dayOfWeekChartInstance = new Chart(document.getElementById('dayOfWeekChart'), {
-                type: 'polarArea',
-                data: {
-                    labels: daysMap,
-                    datasets: [{
-                        data: dayCounts,
-                        backgroundColor: [
-                            'rgba(244, 63, 94, 0.7)', 'rgba(56, 189, 248, 0.7)', 'rgba(16, 185, 129, 0.7)',
-                            'rgba(245, 158, 11, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.7)', 'rgba(99, 102, 241, 0.7)'
-                        ]
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // --- 4. Monthly Trend ---
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const monthlyCounts = {};
-            data.forEach(b => {
-                const d = safeParseDate(b.date);
+                const d = parseDateSafe(b.date);
                 if(d) {
-                    const key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-                    monthlyCounts[key] = (monthlyCounts[key] || 0) + 1;
+                    // Create a sortable key format 'YYYY-MM'
+                    const sortKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    const displayLabel = d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                    
+                    if(!monthCounts[sortKey]) monthCounts[sortKey] = { label: displayLabel, count: 0 };
+                    monthCounts[sortKey].count++;
                 }
             });
             
-            // Get last 6 months present in data
-            const monthLabels = Object.keys(monthlyCounts).slice(-6);
-            const monthData = monthLabels.map(m => monthlyCounts[m]);
+            // Sort keys to ensure chronological order regardless of sheet sorting
+            const sortedMonthKeys = Object.keys(monthCounts).sort();
+            const monthlyLabels = sortedMonthKeys.map(k => monthCounts[k].label);
+            const monthlyDataVals = sortedMonthKeys.map(k => monthCounts[k].count);
 
             if (monthlyChartInstance) monthlyChartInstance.destroy();
             monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
                 type: 'line',
                 data: {
-                    labels: monthLabels,
+                    labels: monthlyLabels,
                     datasets: [{
-                        label: 'Monthly Bookings', data: monthData,
-                        borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4
+                        label: 'Bookings per Month',
+                        data: monthlyDataVals,
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0284c7'
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
+
+            // --- 4. Status Pie Chart ---
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(document.getElementById('statusChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Upcoming', 'Today (Pending)', 'Completed'],
+                    datasets: [{
+                        data: [upcomingCount, todayCount, pastCount],
+                        backgroundColor: ['#f59e0b', '#10b981', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
 
-        // --- Helper Functions (Date & Time Saftey) ---
-        function safeParseDate(val) {
-            if (!val) return null;
-            let d = new Date(val);
-            if (!isNaN(d.getTime())) return d;
-            
-            // Fallback for tricky string formats like DD/MM/YYYY
-            let parts = String(val).split(/[-/]/);
-            if (parts.length === 3) {
-                // Assuming DD/MM/YYYY
-                d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                if (!isNaN(d.getTime())) return d;
-            }
-            return null;
-        }
-
-        function formatDateIN(dateString) {
-            const d = safeParseDate(dateString);
-            if(!d) return "<span style='color:#ef4444; font-size:0.8rem;'>Pending / Invalid</span>";
-            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-
-        function formatTime(timeStr) {
-            if(!timeStr || timeStr === "undefined") return "--:--";
-            let timeClean = String(timeStr).split('T')[1] || String(timeStr); // if ISO string passed as time
-            if(timeClean.includes(':')) {
-                let [hours, minutes] = timeClean.split(':');
-                let hr = parseInt(hours);
-                if(isNaN(hr)) return timeStr;
-                let ampm = hr >= 12 ? 'PM' : 'AM';
-                hr = hr % 12 || 12;
-                return `${hr}:${minutes.substring(0,2)} ${ampm}`;
-            }
-            return timeStr;
-        }
-
-        // --- Notification Toast Logic ---
-        function showToast(title, message) {
+        // --- Advanced Notification Toast Logic ---
+        function showToast(name, id, date, time) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `
-                <div class="toast-icon"><i class="ph-fill ph-bell-ringing"></i></div>
-                <div class="toast-content">
-                    <h4>${title}</h4>
-                    <p>${message}</p>
+                <svg class="toast-icon" width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 600; color: #1f2937; margin-bottom: 2px;">New Appointment Created!</h4>
+                    <p style="font-size: 0.85rem; color: #4b5563; margin-bottom: 2px;"><strong>Client:</strong> ${name} (${id})</p>
+                    <p style="font-size: 0.8rem; color: #6b7280;">Scheduled on ${formatDateIN(date)} at ${formatTime(time)}</p>
                 </div>
             `;
             container.appendChild(toast);
             
-            setTimeout(() => toast.classList.add('show'), 50);
+            // Animation trigger
+            setTimeout(() => toast.classList.add('show'), 100);
             
-            // Remove after 7 seconds
+            // Remove smoothly after 7 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300); 
+                setTimeout(() => toast.remove(), 400);
             }, 7000);
         }
 
-        // --- Initialization & Live Polling ---
+        // --- Initialization & Polling (Silent Background Refresh) ---
         fetchDashboardData();
-        // Background polling every 10 seconds. Won't interrupt user interaction.
+        // Har 10 seconds me background me data refresh hoga bina page hile
         setInterval(fetchDashboardData, 10000); 
 
     </script>
 </body>
 </html>
+
 
 
