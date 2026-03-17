@@ -8,16 +8,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
         :root {
             --primary: #e11d48;
+            --primary-light: #fb7185;
             --primary-dark: #be123c;
             --bg-color: #f3f4f6;
+            --sidebar-bg: #111827;
+            --sidebar-text: #9ca3af;
+            --sidebar-hover: #1f2937;
             --card-bg: #ffffff;
             --text-dark: #1f2937;
             --text-muted: #6b7280;
             --border: #e5e7eb;
+            --success: #10b981;
+            --success-bg: #dcfce7;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,28 +36,95 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Navbar Styling */
-        .navbar {
-            background-color: var(--primary);
-            color: white;
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #ffffff;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        .nav-links {
+            padding: 1rem 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+            border-left: 4px solid var(--primary);
+        }
+        .nav-item i { font-size: 1.25rem; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .top-header {
+            background-color: var(--card-bg);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 10;
         }
-        .navbar h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
-        .refresh-status { font-size: 0.875rem; opacity: 0.8; }
+        .header-title { font-size: 1.25rem; font-weight: 600; color: var(--text-dark); }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .sync-status {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--success-bg);
+            color: var(--success);
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .sync-status.syncing { background: #fef3c7; color: #d97706; }
 
-        /* Dashboard Container */
-        .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        /* Scrollable Area */
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
 
-        /* Stat Cards */
+        /* --- Stats Grid --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -55,13 +132,26 @@
             background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
         }
-        .stat-card h3 { font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
-        .stat-card .value { font-size: 2rem; font-weight: 600; color: var(--primary); }
+        .stat-info h3 { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .stat-info .value { font-size: 1.8rem; font-weight: 600; color: var(--text-dark); }
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .icon-red { background: #ffe4e6; color: var(--primary); }
+        .icon-blue { background: #dbeafe; color: var(--info); }
+        .icon-green { background: #dcfce7; color: var(--success); }
+        .icon-yellow { background: #fef3c7; color: var(--warning); }
 
-        /* Charts Section */
+        /* --- Charts Grid --- */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -72,49 +162,93 @@
             background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
         }
-        .chart-card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-dark); }
-        .canvas-container { position: relative; height: 300px; width: 100%; }
+        .chart-card h2 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-dark); }
+        .canvas-container { position: relative; height: 260px; width: 100%; }
 
-        /* Table Section */
+        /* --- Table Section --- */
         .table-card {
             background: var(--card-bg);
             border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
             overflow: hidden;
+            margin-bottom: 2rem;
         }
-        .table-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
-        .table-header h2 { font-size: 1.25rem; }
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-header h2 { font-size: 1.1rem; }
         
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        th { background-color: #f9fafb; font-weight: 600; color: var(--text-muted); }
-        tr:hover { background-color: #f9fafb; }
-        .badge {
-            background-color: #dcfce7; color: #166534; padding: 0.25rem 0.5rem;
-            border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+        /* Search Box */
+        .search-box {
+            display: flex; align-items: center;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            width: 300px;
+        }
+        .search-box i { color: var(--text-muted); margin-right: 8px; }
+        .search-box input {
+            border: none; background: transparent; outline: none;
+            width: 100%; font-size: 0.9rem; font-family: 'Poppins', sans-serif;
         }
 
-        /* Toast Notification */
+        .table-responsive { overflow-x: auto; max-height: 500px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { background-color: #f9fafb; font-weight: 600; color: var(--text-muted); position: sticky; top: 0; z-index: 1;}
+        tr:hover { background-color: #f9fafb; }
+        .badge {
+            background-color: var(--success-bg); color: var(--success); padding: 0.25rem 0.6rem;
+            border-radius: 999px; font-size: 0.75rem; font-weight: 600; display: inline-block;
+        }
+        .action-btn {
+            background: none; border: none; color: var(--primary);
+            cursor: pointer; font-size: 1.1rem; padding: 4px;
+        }
+        .action-btn:hover { color: var(--primary-dark); }
+
+        /* --- Toast Notification --- */
         .toast-container {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
             display: flex; flex-direction: column; gap: 10px;
         }
         .toast {
             background-color: white; border-left: 4px solid var(--primary);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 1rem 1.5rem;
-            border-radius: 0.5rem; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem;
+            border-radius: 0.5rem; display: flex; align-items: flex-start; gap: 12px;
             transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 320px;
         }
         .toast.show { transform: translateX(0); }
-        .toast-icon { color: var(--primary); }
+        .toast-icon { color: var(--primary); font-size: 1.5rem; margin-top: 2px; }
+        .toast-content h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-dark); }
+        .toast-content p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;}
 
         /* Loader */
-        #loader { text-align: center; padding: 2rem; color: var(--text-muted); }
+        .loader-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 50;
+        }
+        .spinner {
+            border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px;
+            border-radius: 50%; border-left-color: var(--primary);
+            animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .sidebar { width: 70px; }
+            .sidebar-header h1, .nav-item span { display: none; }
             .charts-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -124,104 +258,178 @@
     <!-- Notification Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <h1>Glow & Grace Admin</h1>
-        <div class="refresh-status" id="refreshStatus">Data fetching...</div>
-    </nav>
+    <!-- Sidebar Layout -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>G&G Admin</h1>
+        </div>
+        <div class="nav-links">
+            <div class="nav-item active"><i class="ph ph-squares-four"></i> <span>Dashboard</span></div>
+            <div class="nav-item"><i class="ph ph-calendar-check"></i> <span>Appointments</span></div>
+            <div class="nav-item"><i class="ph ph-users"></i> <span>Customers</span></div>
+            <div class="nav-item"><i class="ph ph-chart-line-up"></i> <span>Analytics</span></div>
+            <div class="nav-item"><i class="ph ph-gear"></i> <span>Settings</span></div>
+        </div>
+    </aside>
 
-    <div class="container">
-        <!-- Loader -->
-        <div id="loader">Loading data... please wait.</div>
-
-        <div id="dashboardContent" style="display: none;">
-            <!-- Stat Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Total Bookings</h3>
-                    <div class="value" id="stat-total">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Today's Bookings</h3>
-                    <div class="value" id="stat-today">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Upcoming Bookings</h3>
-                    <div class="value" id="stat-upcoming">0</div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-title">Overview</div>
+            <div class="header-actions">
+                <div class="sync-status" id="refreshStatus">
+                    <i class="ph ph-check-circle"></i> Live Sync Active
                 </div>
             </div>
+        </header>
 
-            <!-- Charts Section -->
-            <div class="charts-grid">
-                <!-- Chart 1: Daily Bookings (Bar Chart) -->
-                <div class="chart-card">
-                    <h2>Daily Bookings (Last 7 Days)</h2>
-                    <div class="canvas-container">
-                        <canvas id="dailyChart"></canvas>
-                    </div>
-                </div>
-                <!-- Chart 2: Time Slot Analysis (Doughnut Chart) -->
-                <div class="chart-card">
-                    <h2>Time Slot Analysis</h2>
-                    <div class="canvas-container">
-                        <canvas id="timeChart"></canvas>
-                    </div>
-                </div>
+        <!-- Scrollable Content -->
+        <div class="content-area">
+            
+            <div class="loader-container" id="loader">
+                <div class="spinner"></div>
+                <p>Connecting to Database...</p>
             </div>
 
-            <!-- Recent Bookings Table -->
-            <div class="table-card">
-                <div class="table-header">
-                    <h2>Recent Appointments</h2>
+            <div id="dashboardContent" style="display: none;">
+                <!-- Stat Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Total Bookings</h3>
+                            <div class="value" id="stat-total">0</div>
+                        </div>
+                        <div class="stat-icon icon-blue"><i class="ph ph-folder-open"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Today's Bookings</h3>
+                            <div class="value" id="stat-today">0</div>
+                        </div>
+                        <div class="stat-icon icon-red"><i class="ph ph-calendar-star"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Upcoming</h3>
+                            <div class="value" id="stat-upcoming">0</div>
+                        </div>
+                        <div class="stat-icon icon-yellow"><i class="ph ph-clock-countdown"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>This Month</h3>
+                            <div class="value" id="stat-month">0</div>
+                        </div>
+                        <div class="stat-icon icon-green"><i class="ph ph-chart-bar"></i></div>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table id="bookingsTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Mobile</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Data will be populated via JS -->
-                        </tbody>
-                    </table>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <!-- Chart 1: Daily Bookings -->
+                    <div class="chart-card">
+                        <h2>Daily Bookings Trend</h2>
+                        <div class="canvas-container"><canvas id="dailyChart"></canvas></div>
+                    </div>
+                    <!-- Chart 2: Time Slot -->
+                    <div class="chart-card">
+                        <h2>Preferred Time Slots</h2>
+                        <div class="canvas-container"><canvas id="timeChart"></canvas></div>
+                    </div>
+                    <!-- Chart 3: Day of Week -->
+                    <div class="chart-card">
+                        <h2>Busiest Days of Week</h2>
+                        <div class="canvas-container"><canvas id="dayOfWeekChart"></canvas></div>
+                    </div>
+                    <!-- Chart 4: Monthly Trend -->
+                    <div class="chart-card">
+                        <h2>Monthly Overview</h2>
+                        <div class="canvas-container"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h2>Appointments Masterlist</h2>
+                        <div class="search-box">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="searchInput" placeholder="Search name, mobile or ID..." onkeyup="handleSearch()">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="bookingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Appt. ID</th>
+                                    <th>Customer Name</th>
+                                    <th>Mobile</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
+        // NEW WEB APP URL
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWjgovGzRGffDAer7lT7Y4IPfO8fQu12nDb3FeL2pOdHa1aE1oYLtiSALHXDNBGCPEiQ/exec';
         
         let allBookings = [];
+        let filteredBookings = []; // For search functionality
+        
+        // Chart Instances
         let dailyChartInstance = null;
         let timeChartInstance = null;
+        let dayOfWeekChartInstance = null;
+        let monthlyChartInstance = null;
+        
         let isFirstLoad = true;
 
-        // --- Data Fetching Function ---
+        // --- Data Fetching & Polling ---
         async function fetchDashboardData() {
-            document.getElementById('refreshStatus').innerText = "Syncing...";
+            const statusIndicator = document.getElementById('refreshStatus');
+            statusIndicator.innerHTML = '<i class="ph ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> Syncing...';
+            statusIndicator.classList.add('syncing');
+
             try {
-                // Fetch data with ?action=getAll
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
                 const result = await response.json();
 
                 if (result.status === 'success') {
                     const newData = result.data;
                     
-                    // Check if new bookings arrived (if not first load)
+                    // Trigger Live Notifications for new bookings
                     if (!isFirstLoad && newData.length > allBookings.length) {
-                        const newAppointmentsCount = newData.length - allBookings.length;
-                        showToast(`${newAppointmentsCount} New Booking(s) Received!`);
+                        const newCount = newData.length - allBookings.length;
+                        const newAppointments = newData.slice(allBookings.length);
+                        
+                        // Show detailed alert for up to 3 newest bookings to avoid spam
+                        newAppointments.slice(-3).forEach(b => {
+                            const dateFmt = formatDateIN(b.date);
+                            const timeFmt = formatTime(b.time);
+                            showToast(`Appointment Details:`, `${b.name} has booked on <b>${dateFmt}</b> at <b>${timeFmt}</b>. Contact: ${b.mobile}`);
+                        });
+                        
+                        if(newCount > 3) {
+                            showToast(`Multiple Updates`, `+${newCount - 3} more new bookings received in the background.`);
+                        }
                     }
 
                     allBookings = newData;
-                    updateDashboardUI();
+                    
+                    // Maintain search filter if active
+                    handleSearch(); 
                     
                     if(isFirstLoad) {
                         document.getElementById('loader').style.display = 'none';
@@ -231,43 +439,36 @@
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('refreshStatus').innerText = "Sync Error!";
+                statusIndicator.innerHTML = '<i class="ph ph-warning"></i> Sync Error';
+                statusIndicator.style.background = '#fee2e2';
+                statusIndicator.style.color = '#ef4444';
             } finally {
                 setTimeout(() => {
-                    document.getElementById('refreshStatus').innerText = "Live / Auto-Syncing";
+                    statusIndicator.innerHTML = '<i class="ph ph-check-circle"></i> Live Sync Active';
+                    statusIndicator.classList.remove('syncing');
+                    statusIndicator.style = ''; // Reset inline styles
                 }, 2000);
             }
         }
 
-        // --- UI Update Function ---
-        function updateDashboardUI() {
+        // --- UI Update & Rendering ---
+        function updateDashboardUI(dataToRender) {
             const todayStr = new Date().toISOString().split('T')[0];
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
             let todayCount = 0;
             let upcomingCount = 0;
+            let monthCount = 0;
 
-            // Sort bookings (Newest first)
-            const sortedBookings = [...allBookings].reverse();
-
-            // Table Body Update
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-
-            sortedBookings.forEach((b, index) => {
-                // Calculate stats
-                if (b.date === todayStr) todayCount++;
-                if (b.date > todayStr) upcomingCount++;
-
-                // Table Rows (Show latest 20 only)
-                if (index < 20) {
-                    const row = `<tr>
-                        <td><strong>${b.id}</strong></td>
-                        <td>${b.name}</td>
-                        <td>${b.mobile}</td>
-                        <td>${formatDateIN(b.date)}</td>
-                        <td>${formatTime(b.time)}</td>
-                        <td><span class="badge">Confirmed</span></td>
-                    </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', row);
+            // Stats calculation uses ALL data
+            allBookings.forEach(b => {
+                const parsedDate = safeParseDate(b.date);
+                if(parsedDate) {
+                    const bDateStr = parsedDate.toISOString().split('T')[0];
+                    if (bDateStr === todayStr) todayCount++;
+                    if (bDateStr > todayStr) upcomingCount++;
+                    if (parsedDate.getMonth() === currentMonth && parsedDate.getFullYear() === currentYear) monthCount++;
                 }
             });
 
@@ -275,116 +476,224 @@
             document.getElementById('stat-total').innerText = allBookings.length;
             document.getElementById('stat-today').innerText = todayCount;
             document.getElementById('stat-upcoming').innerText = upcomingCount;
+            document.getElementById('stat-month').innerText = monthCount;
 
-            // Render Charts
-            renderCharts(sortedBookings);
+            // Render Table (using potentially filtered data)
+            const sortedBookings = [...dataToRender].reverse();
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (sortedBookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: #6b7280;">No records found.</td></tr>`;
+            } else {
+                sortedBookings.forEach((b) => {
+                    const row = `<tr>
+                        <td><strong>${b.id || 'N/A'}</strong></td>
+                        <td>${b.name || 'N/A'}</td>
+                        <td>${b.mobile || 'N/A'}</td>
+                        <td>${formatDateIN(b.date)}</td>
+                        <td>${formatTime(b.time)}</td>
+                        <td><span class="badge">Confirmed</span></td>
+                        <td>
+                            <button class="action-btn" title="View Details"><i class="ph ph-eye"></i></button>
+                        </td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            // Render Charts (always uses all data for trends)
+            renderCharts([...allBookings].reverse());
         }
 
-        // --- Chart Rendering Function ---
+        // --- Search Functionality ---
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) {
+                filteredBookings = [...allBookings];
+            } else {
+                filteredBookings = allBookings.filter(b => 
+                    (b.name && b.name.toLowerCase().includes(query)) ||
+                    (b.mobile && String(b.mobile).includes(query)) ||
+                    (b.id && b.id.toLowerCase().includes(query))
+                );
+            }
+            updateDashboardUI(filteredBookings);
+        }
+
+        // --- Advanced Chart Rendering ---
         function renderCharts(data) {
-            // 1. Data prepare for Daily Bookings (Last 7 dates)
+            Chart.defaults.font.family = "'Poppins', sans-serif";
+            Chart.defaults.color = '#6b7280';
+
+            // --- 1. Daily Bookings (Last 7 Days) ---
             const dateCounts = {};
             data.forEach(b => {
-                if(b.date) {
-                    dateCounts[b.date] = (dateCounts[b.date] || 0) + 1;
+                const d = safeParseDate(b.date);
+                if(d) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
                 }
             });
-
-            // Get last 7 days sorted keys
             const sortedDates = Object.keys(dateCounts).sort().slice(-7);
-            const dailyLabels = sortedDates.map(d => formatDateIN(d).split(',')[0]); // Short date
+            const dailyLabels = sortedDates.map(d => formatDateIN(d).split(',')[0]);
             const dailyData = sortedDates.map(d => dateCounts[d]);
 
             if (dailyChartInstance) dailyChartInstance.destroy();
-            const ctx1 = document.getElementById('dailyChart').getContext('2d');
-            dailyChartInstance = new Chart(ctx1, {
+            dailyChartInstance = new Chart(document.getElementById('dailyChart'), {
                 type: 'bar',
                 data: {
                     labels: dailyLabels,
                     datasets: [{
-                        label: 'Bookings',
-                        data: dailyData,
-                        backgroundColor: '#fb7185',
-                        borderRadius: 4
+                        label: 'Appointments', data: dailyData,
+                        backgroundColor: '#fb7185', borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // --- 2. Time Slot Analysis ---
+            let morning = 0, afternoon = 0, evening = 0;
+            data.forEach(b => {
+                if(b.time && typeof b.time === 'string') {
+                    const hour = parseInt(b.time.split(':')[0]);
+                    if (!isNaN(hour)) {
+                        if (hour < 12) morning++;
+                        else if (hour < 16) afternoon++;
+                        else evening++;
+                    }
+                }
+            });
+
+            if (timeChartInstance) timeChartInstance.destroy();
+            timeChartInstance = new Chart(document.getElementById('timeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Morning (<12 PM)', 'Afternoon (12-4 PM)', 'Evening (>4 PM)'],
+                    datasets: [{
+                        data: [morning, afternoon, evening],
+                        backgroundColor: ['#38bdf8', '#fbbf24', '#e11d48'], borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+            });
+
+            // --- 3. Day of Week Analysis ---
+            const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+            data.forEach(b => {
+                const d = safeParseDate(b.date);
+                if(d) dayCounts[d.getDay()]++;
+            });
+
+            if (dayOfWeekChartInstance) dayOfWeekChartInstance.destroy();
+            dayOfWeekChartInstance = new Chart(document.getElementById('dayOfWeekChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: daysMap,
+                    datasets: [{
+                        data: dayCounts,
+                        backgroundColor: [
+                            'rgba(244, 63, 94, 0.7)', 'rgba(56, 189, 248, 0.7)', 'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.7)', 'rgba(99, 102, 241, 0.7)'
+                        ]
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // 2. Data prepare for Time Slot (Morning, Afternoon, Evening)
-            let morning = 0, afternoon = 0, evening = 0;
+            // --- 4. Monthly Trend ---
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthlyCounts = {};
             data.forEach(b => {
-                if(b.time) {
-                    const hour = parseInt(b.time.split(':')[0]);
-                    if (hour < 12) morning++;
-                    else if (hour < 16) afternoon++;
-                    else evening++;
+                const d = safeParseDate(b.date);
+                if(d) {
+                    const key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+                    monthlyCounts[key] = (monthlyCounts[key] || 0) + 1;
                 }
             });
+            
+            // Get last 6 months present in data
+            const monthLabels = Object.keys(monthlyCounts).slice(-6);
+            const monthData = monthLabels.map(m => monthlyCounts[m]);
 
-            if (timeChartInstance) timeChartInstance.destroy();
-            const ctx2 = document.getElementById('timeChart').getContext('2d');
-            timeChartInstance = new Chart(ctx2, {
-                type: 'doughnut',
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
+                type: 'line',
                 data: {
-                    labels: ['Morning', 'Afternoon', 'Evening'],
+                    labels: monthLabels,
                     datasets: [{
-                        data: [morning, afternoon, evening],
-                        backgroundColor: ['#38bdf8', '#fbbf24', '#e11d48'],
-                        borderWidth: 0
+                        label: 'Monthly Bookings', data: monthData,
+                        borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
-        // --- Helper Functions ---
+        // --- Helper Functions (Date & Time Saftey) ---
+        function safeParseDate(val) {
+            if (!val) return null;
+            let d = new Date(val);
+            if (!isNaN(d.getTime())) return d;
+            
+            // Fallback for tricky string formats like DD/MM/YYYY
+            let parts = String(val).split(/[-/]/);
+            if (parts.length === 3) {
+                // Assuming DD/MM/YYYY
+                d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                if (!isNaN(d.getTime())) return d;
+            }
+            return null;
+        }
+
         function formatDateIN(dateString) {
-            if(!dateString) return "N/A";
-            const d = new Date(dateString);
+            const d = safeParseDate(dateString);
+            if(!d) return "<span style='color:#ef4444; font-size:0.8rem;'>Pending / Invalid</span>";
             return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         }
 
         function formatTime(timeStr) {
-            if(!timeStr) return "N/A";
-            if(timeStr.includes(':')) {
-                let [hours, minutes] = timeStr.split(':');
-                let ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12;
-                return `${hours}:${minutes} ${ampm}`;
+            if(!timeStr || timeStr === "undefined") return "--:--";
+            let timeClean = String(timeStr).split('T')[1] || String(timeStr); // if ISO string passed as time
+            if(timeClean.includes(':')) {
+                let [hours, minutes] = timeClean.split(':');
+                let hr = parseInt(hours);
+                if(isNaN(hr)) return timeStr;
+                let ampm = hr >= 12 ? 'PM' : 'AM';
+                hr = hr % 12 || 12;
+                return `${hr}:${minutes.substring(0,2)} ${ampm}`;
             }
             return timeStr;
         }
 
         // --- Notification Toast Logic ---
-        function showToast(message) {
+        function showToast(title, message) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `
-                <svg class="toast-icon" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                <div>
-                    <h4 style="font-size: 0.875rem; margin-bottom: 2px;">New Alert!</h4>
-                    <p style="font-size: 0.8rem; color: #6b7280;">${message}</p>
+                <div class="toast-icon"><i class="ph-fill ph-bell-ringing"></i></div>
+                <div class="toast-content">
+                    <h4>${title}</h4>
+                    <p>${message}</p>
                 </div>
             `;
             container.appendChild(toast);
             
-            // Animation trigger
-            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => toast.classList.add('show'), 50);
             
-            // Remove after 5 seconds
+            // Remove after 7 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300); // Remove from DOM after transition
-            }, 5000);
+                setTimeout(() => toast.remove(), 300); 
+            }, 7000);
         }
 
-        // --- Initialization & Polling ---
+        // --- Initialization & Live Polling ---
         fetchDashboardData();
-        // Poll every 10 seconds for real-time feel
+        // Background polling every 10 seconds. Won't interrupt user interaction.
         setInterval(fetchDashboardData, 10000); 
 
     </script>
