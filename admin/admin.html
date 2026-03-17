@@ -271,8 +271,9 @@
     </div>
 
     <script>
-        // Updated Web App URL as requested
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWjgovGzRGffDAer7lT7Y4IPfO8fQu12nDb3FeL2pOdHa1aE1oYLtiSALHXDNBGCPEiQ/exec';
+        // Updated to fetch directly using Google Sheet ID instead of Web App URL
+        const SHEET_ID = '1NvlKQ1wGoLu_XWyxUTw0YJcgyKLAgZ6NXTGKJxGYTwI';
+        const SHEET_NAME = 'Bookings';
         
         let allBookings = [];
         // Chart instances store karne ke liye variables
@@ -285,6 +286,15 @@
         // --- BUG FIX 1: STRICT INDIAN DATE PARSER ---
         function parseDateSafe(dateString) {
             if (!dateString) return null;
+            dateString = String(dateString);
+            
+            // Handle Google Visualization API Date format e.g. Date(2024, 9, 25)
+            if (dateString.startsWith('Date(')) {
+                const parts = dateString.substring(5, dateString.length - 1).split(',');
+                if (parts.length >= 3) {
+                    return new Date(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+                }
+            }
             
             // Try standard ISO parse
             let d = new Date(dateString);
@@ -392,17 +402,34 @@
             return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hours, minutes, 0);
         }
 
-        // --- Data Fetching Function (Real-time update logic) ---
+        // --- Data Fetching Function (Direct Google Sheet Fetch) ---
         async function fetchDashboardData() {
             try {
-                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
-                const result = await response.json();
+                // Fetching via Google Visualization API
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // Extract pure JSON from Google's callback wrapper
+                const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const result = JSON.parse(jsonString);
 
-                if (result.status === 'success') {
-                    const newData = result.data;
-                    
-                    // --- BUG FIX 2: DEEP DATA COMPARISON ---
-                    // Length ki jagah ab hum pura data check karenge, to sheet edit/update hone par bhi UI update hoga
+                if (result && result.table && result.table.rows) {
+                    let newData = [];
+                    result.table.rows.forEach(row => {
+                        // Ignore empty rows or rows without an ID
+                        if (row.c && row.c[0] && row.c[0].v) {
+                            newData.push({
+                                id: row.c[0] ? String(row.c[0].v) : '',
+                                name: row.c[1] ? String(row.c[1].v) : '',
+                                mobile: row.c[2] ? String(row.c[2].v) : '',
+                                date: row.c[3] ? (row.c[3].f || String(row.c[3].v)) : '',
+                                time: row.c[4] ? (row.c[4].f || String(row.c[4].v)) : ''
+                            });
+                        }
+                    });
+
+                    // Deep data comparison
                     const oldDataString = JSON.stringify(allBookings);
                     const newDataString = JSON.stringify(newData);
 
@@ -427,7 +454,7 @@
                     }
                 }
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching data directly from sheet:", error);
             }
         }
 
@@ -684,6 +711,7 @@
     </script>
 </body>
 </html>
+
 
 
 
