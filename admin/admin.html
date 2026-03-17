@@ -207,6 +207,30 @@
                 </div>
             </div>
 
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>All Appointments Database</h2>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search by Name, ID or Mobile..." onkeyup="filterTable()">
+                </div>
+                <div class="table-responsive">
+                    <table id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Appointment ID</th>
+                                <th>Client Name</th>
+                                <th>Mobile Number</th>
+                                <th>Appointment Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data JS se dynamically update hoga -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Charts Section (Top Row) -->
             <div class="charts-grid">
                 <!-- Chart 1: Daily Bookings (Bar) -->
@@ -244,29 +268,6 @@
             </div>
 
             <!-- Recent Bookings Table -->
-            <div class="table-card">
-                <div class="table-header">
-                    <h2>All Appointments Database</h2>
-                    <input type="text" id="searchInput" class="search-box" placeholder="Search by Name, ID or Mobile..." onkeyup="filterTable()">
-                </div>
-                <div class="table-responsive">
-                    <table id="bookingsTable">
-                        <thead>
-                            <tr>
-                                <th>Appointment ID</th>
-                                <th>Client Name</th>
-                                <th>Mobile Number</th>
-                                <th>Appointment Date</th>
-                                <th>Time</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Data JS se dynamically update hoga -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 
