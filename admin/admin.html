@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glow & Grace | Admin Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #e11d48;
+            --primary-dark: #be123c;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+        .refresh-status { font-size: 0.875rem; opacity: 0.8; }
+
+        /* Dashboard Container */
+        .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+        /* Stat Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card h3 { font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 2rem; font-weight: 600; color: var(--primary); }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .chart-card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-dark); }
+        .canvas-container { position: relative; height: 300px; width: 100%; }
+
+        /* Table Section */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .table-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
+        .table-header h2 { font-size: 1.25rem; }
+        
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { background-color: #f9fafb; font-weight: 600; color: var(--text-muted); }
+        tr:hover { background-color: #f9fafb; }
+        .badge {
+            background-color: #dcfce7; color: #166534; padding: 0.25rem 0.5rem;
+            border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            background-color: white; border-left: 4px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 1rem 1.5rem;
+            border-radius: 0.5rem; display: flex; align-items: center; gap: 10px;
+            transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-icon { color: var(--primary); }
+
+        /* Loader */
+        #loader { text-align: center; padding: 2rem; color: var(--text-muted); }
+        
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <h1>Glow & Grace Admin</h1>
+        <div class="refresh-status" id="refreshStatus">Data fetching...</div>
+    </nav>
+
+    <div class="container">
+        <!-- Loader -->
+        <div id="loader">Loading data... please wait.</div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Stat Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Bookings</h3>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Today's Bookings</h3>
+                    <div class="value" id="stat-today">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Upcoming Bookings</h3>
+                    <div class="value" id="stat-upcoming">0</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <!-- Chart 1: Daily Bookings (Bar Chart) -->
+                <div class="chart-card">
+                    <h2>Daily Bookings (Last 7 Days)</h2>
+                    <div class="canvas-container">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                </div>
+                <!-- Chart 2: Time Slot Analysis (Doughnut Chart) -->
+                <div class="chart-card">
+                    <h2>Time Slot Analysis</h2>
+                    <div class="canvas-container">
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Recent Appointments</h2>
+                </div>
+                <div class="table-responsive">
+                    <table id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Mobile</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWjgovGzRGffDAer7lT7Y4IPfO8fQu12nDb3FeL2pOdHa1aE1oYLtiSALHXDNBGCPEiQ/exec';
+        
+        let allBookings = [];
+        let dailyChartInstance = null;
+        let timeChartInstance = null;
+        let isFirstLoad = true;
+
+        // --- Data Fetching Function ---
+        async function fetchDashboardData() {
+            document.getElementById('refreshStatus').innerText = "Syncing...";
+            try {
+                // Fetch data with ?action=getAll
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const newData = result.data;
+                    
+                    // Check if new bookings arrived (if not first load)
+                    if (!isFirstLoad && newData.length > allBookings.length) {
+                        const newAppointmentsCount = newData.length - allBookings.length;
+                        showToast(`${newAppointmentsCount} New Booking(s) Received!`);
+                    }
+
+                    allBookings = newData;
+                    updateDashboardUI();
+                    
+                    if(isFirstLoad) {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('dashboardContent').style.display = 'block';
+                        isFirstLoad = false;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('refreshStatus').innerText = "Sync Error!";
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('refreshStatus').innerText = "Live / Auto-Syncing";
+                }, 2000);
+            }
+        }
+
+        // --- UI Update Function ---
+        function updateDashboardUI() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayCount = 0;
+            let upcomingCount = 0;
+
+            // Sort bookings (Newest first)
+            const sortedBookings = [...allBookings].reverse();
+
+            // Table Body Update
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            sortedBookings.forEach((b, index) => {
+                // Calculate stats
+                if (b.date === todayStr) todayCount++;
+                if (b.date > todayStr) upcomingCount++;
+
+                // Table Rows (Show latest 20 only)
+                if (index < 20) {
+                    const row = `<tr>
+                        <td><strong>${b.id}</strong></td>
+                        <td>${b.name}</td>
+                        <td>${b.mobile}</td>
+                        <td>${formatDateIN(b.date)}</td>
+                        <td>${formatTime(b.time)}</td>
+                        <td><span class="badge">Confirmed</span></td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                }
+            });
+
+            // Update Stats
+            document.getElementById('stat-total').innerText = allBookings.length;
+            document.getElementById('stat-today').innerText = todayCount;
+            document.getElementById('stat-upcoming').innerText = upcomingCount;
+
+            // Render Charts
+            renderCharts(sortedBookings);
+        }
+
+        // --- Chart Rendering Function ---
+        function renderCharts(data) {
+            // 1. Data prepare for Daily Bookings (Last 7 dates)
+            const dateCounts = {};
+            data.forEach(b => {
+                if(b.date) {
+                    dateCounts[b.date] = (dateCounts[b.date] || 0) + 1;
+                }
+            });
+
+            // Get last 7 days sorted keys
+            const sortedDates = Object.keys(dateCounts).sort().slice(-7);
+            const dailyLabels = sortedDates.map(d => formatDateIN(d).split(',')[0]); // Short date
+            const dailyData = sortedDates.map(d => dateCounts[d]);
+
+            if (dailyChartInstance) dailyChartInstance.destroy();
+            const ctx1 = document.getElementById('dailyChart').getContext('2d');
+            dailyChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Bookings',
+                        data: dailyData,
+                        backgroundColor: '#fb7185',
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Data prepare for Time Slot (Morning, Afternoon, Evening)
+            let morning = 0, afternoon = 0, evening = 0;
+            data.forEach(b => {
+                if(b.time) {
+                    const hour = parseInt(b.time.split(':')[0]);
+                    if (hour < 12) morning++;
+                    else if (hour < 16) afternoon++;
+                    else evening++;
+                }
+            });
+
+            if (timeChartInstance) timeChartInstance.destroy();
+            const ctx2 = document.getElementById('timeChart').getContext('2d');
+            timeChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Morning', 'Afternoon', 'Evening'],
+                    datasets: [{
+                        data: [morning, afternoon, evening],
+                        backgroundColor: ['#38bdf8', '#fbbf24', '#e11d48'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+        }
+
+        // --- Helper Functions ---
+        function formatDateIN(dateString) {
+            if(!dateString) return "N/A";
+            const d = new Date(dateString);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function formatTime(timeStr) {
+            if(!timeStr) return "N/A";
+            if(timeStr.includes(':')) {
+                let [hours, minutes] = timeStr.split(':');
+                let ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                return `${hours}:${minutes} ${ampm}`;
+            }
+            return timeStr;
+        }
+
+        // --- Notification Toast Logic ---
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <svg class="toast-icon" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <div>
+                    <h4 style="font-size: 0.875rem; margin-bottom: 2px;">New Alert!</h4>
+                    <p style="font-size: 0.8rem; color: #6b7280;">${message}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            // Animation trigger
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300); // Remove from DOM after transition
+            }, 5000);
+        }
+
+        // --- Initialization & Polling ---
+        fetchDashboardData();
+        // Poll every 10 seconds for real-time feel
+        setInterval(fetchDashboardData, 10000); 
+
+    </script>
+</body>
+</html>
+
+
